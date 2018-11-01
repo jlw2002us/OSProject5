@@ -182,14 +182,14 @@ void  ALARMhandler(int sig)
       while(1){if(signal_interrupt == true) break;
           
       //fprintf(stderr,"bound milliseconds is %d\n", boundmill);
-          if(MaxProcesses >= 4) break;
+          if(MaxProcesses >= 5) break;
           int milliseconds = (1000*shmPTR->seconds) + (shmPTR->nanoseconds/1000000);
         //  fprintf(stderr, "milliseconds is %d\n", milliseconds);
           if(milliseconds >= boundmill){
             MaxProcesses++; shmPTR->childCount++;
             srand(getrand++);
             value = 1 + (rand()%500); //fork every 1 to 500 milliseconds
-            fprintf(stderr, "Value is %d\n", value);
+            //fprintf(stderr, "Value is %d\n", value);
             boundmill = shmPTR->seconds*1000 + (shmPTR->nanoseconds/1000000) + value;
             shmPTR->processID = MaxProcesses;
 
@@ -220,12 +220,12 @@ void  ALARMhandler(int sig)
             shmPTR->MaxClaims = value;
              forkValue = false; }
             long long int nanoseconds = 0;
-            while(nanoseconds < 20000000){
+            while(nanoseconds < 2000000000){
              nanoseconds = nanoseconds + 100;
 
             }
             shmPTR->nanoseconds = shmPTR->nanoseconds + nanoseconds;
-            if(shmPTR->nanoseconds >= 1000000000){
+            while(shmPTR->nanoseconds >= 1000000000){
               shmPTR->seconds++;
               shmPTR->nanoseconds = shmPTR->nanoseconds - nanoseconds;}
        }
