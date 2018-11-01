@@ -26,7 +26,7 @@ struct Memory {
      long long int  nanoseconds;
      int TerminatedProc[2];
      int processID;
-     int childCount;
+     int RequestID;
      long int Requests;
      int termNum;
 };
@@ -176,21 +176,21 @@ void  ALARMhandler(int sig)
             srand(getrand++); 
             value =  1 + (rand()%10);
              MaxClaims[x] = value;}        
-     value =  1 + (rand()%5);
+     value =  1 + (rand()%5);  //constant max bound is 5
             shmPTR->MaxClaims = value;
       
       while(1){if(signal_interrupt == true) break;
           
       //fprintf(stderr,"bound milliseconds is %d\n", boundmill);
-          if(MaxProcesses >= 5) break;
-          int milliseconds = (1000*shmPTR->seconds) + (shmPTR->nanoseconds/1000000);
+          if(MaxProcesses >= 8) break;
+          int milliseconds = (1000*shmPTR->seconds) + (int)(shmPTR->nanoseconds/1000000);
         //  fprintf(stderr, "milliseconds is %d\n", milliseconds);
           if(milliseconds >= boundmill){
-            MaxProcesses++; shmPTR->childCount++;
+            MaxProcesses++; 
             srand(getrand++);
             value = 1 + (rand()%500); //fork every 1 to 500 milliseconds
             //fprintf(stderr, "Value is %d\n", value);
-            boundmill = shmPTR->seconds*1000 + (shmPTR->nanoseconds/1000000) + value;
+            boundmill = shmPTR->seconds*1000 + (int)(shmPTR->nanoseconds/1000000) + value;
             shmPTR->processID = MaxProcesses;
 
             forkValue = true;
@@ -209,10 +209,10 @@ void  ALARMhandler(int sig)
 
           if(shmPTR->Requests != 0){
           sem = sem_open("sem1004", 0); sem_wait(sem);
-          fprintf(stderr,"Request is %ld", shmPTR->Requests);
+          fprintf(stderr,"Process %d requests %ld", shmPTR->RequestID,shmPTR->Requests);
           shmPTR->Requests = 0; sem_post(sem); sem_close(sem);}
-     //     fprintf(stderr, "child count is %d\n", shmPTR->childCount);
-          for(y = 0; y < shmPTR->termNum; y++){
+          //fprintf(stderr, "term 0 is %d\n", shmPTR->TerminatedProc[0]);
+          for(y = 0; y < shmPTR->termNum; y++){fprintf(stderr,"%s","hi");
                shmPTR->TerminatedProc[y] = -2;
                shmPTR->termNum = 0;}
           if(forkValue == true){ 
@@ -220,7 +220,7 @@ void  ALARMhandler(int sig)
             shmPTR->MaxClaims = value;
              forkValue = false; }
             long long int nanoseconds = 0;
-            while(nanoseconds < 2000000000){
+            while(nanoseconds < 200000000){
              nanoseconds = nanoseconds + 100;
 
             }

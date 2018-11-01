@@ -18,7 +18,7 @@ struct Memory {
      long long int  nanoseconds;
      int TerminatedProc[2];
      int processID;
-     int childCount;
+     int RequestID;
      long int Requests;
      int termNum;
 };
@@ -26,13 +26,13 @@ struct Memory {
 struct Memory  *shmPTR;
 int main() {
 key_t ShmKEY;
-   int quantum = 2000;
-   int terminated = 0;
+   //int quantum = 2000;
+   //int terminated = 0;
    int value = 0;
    long int getrand = getpid();
    int boundmil = 0;
    int milliseconds = 0;
-   int NextProcess = -2;
+   //int NextProcess = -2;
     int ShmID;
    sem_t *sem;
    long long int x = 0;
@@ -53,24 +53,24 @@ key_t ShmKEY;
                                                                                                                                                                                                                                                                                                                                                                           exit(1);
                                                                                                                                                                                                                                                                                                                                                                                                                                       }
       srand(getrand++);
-            value = 1 + (rand()%5); //fork every 1 to 500 milliseconds
+            value = 1 + (rand()%100); //fork every 1 to 500 milliseconds
       boundmil =  1000*shmPTR->seconds + (int)(shmPTR->nanoseconds/1000000) + value;
-     //fprintf(stderr, "%d\n", shmPTR->MaxClaims);
-     fprintf(stderr, "Bound mil is %d\n", boundmil);
+     //fprintf(stderr, "max claim is %d\n", shmPTR->MaxClaims);
+     processID = shmPTR->processID;
      fprintf(stderr,"My process id is %d\n", shmPTR->processID);
      while(x < 1000000000){  
             milliseconds = 1000*shmPTR->seconds + (int)(shmPTR->nanoseconds/1000000);
      //       fprintf(stderr,"milliseconds is %d", milliseconds);
             if((shmPTR->Requests == 0)&&(milliseconds >= boundmil)) {
                 //fprintf(stderr,"milliseconds is %d\n", milliseconds);
-            shmPTR->Requests = getpid();
+            shmPTR->Requests = getpid(); shmPTR->RequestID = processID;
              sem = sem_open("sem1004", 1);sem_post(sem), sem_close(sem);
             break;
          }
     x++;}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               processID = shmPTR->processID;
       shmPTR->TerminatedProc[shmPTR->termNum] = processID;
       shmPTR->termNum++;
-      shmPTR->childCount--;
+      
       shmdt((void *) shmPTR);
     exit(0);
 }
