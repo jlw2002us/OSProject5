@@ -13,7 +13,7 @@
   #include <semaphore.h>
 
 struct Memory {
-     int MaxClaims[20];
+     int MaxClaims;
      int  seconds;
      long long int  milliseconds;
      int TerminatedProc[2];
@@ -48,13 +48,13 @@ key_t ShmKEY;
                                                                                                                                                                                                                                                                                                                     printf("*** shmat error(client) ***\n");
                                                                                                                                                                                                                                                                                                                                                                           exit(1);
                                                                                                                                                                                                                                                                                                                                                                                                                                       }
-     fprintf(stderr, "%d %d\n", shmPTR->MaxClaims[0], shmPTR->MaxClaims[1]);
+     fprintf(stderr, "%d\n", shmPTR->MaxClaims);
      fprintf(stderr,"My process id is %d\n", shmPTR->processID);
      while(true){
         if(shmPTR->Requests == 0) {
-                    
+                
             shmPTR->Requests = getpid();
-            sem = sem_open("sem1004", 1), sem_post(sem), sem_close(sem);
+             sem = sem_open("sem1004", 1);sem_post(sem), sem_close(sem);
             break;
          }
     }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               processID = shmPTR->processID;

@@ -21,7 +21,7 @@
 
 
 struct Memory {
-     int MaxClaims[20];
+     int MaxClaims;
      int  seconds;
      long long int  nanoseconds;
      int TerminatedProc[2];
@@ -57,6 +57,7 @@ void  ALARMhandler(int sig)
   {
      sem_t *sem;
      int value = 0;
+     int MaxClaims[20];
      bool forkValue = false;
      long int getrand = getpid();
      signal(SIGALRM, ALARMhandler);
@@ -169,18 +170,19 @@ void  ALARMhandler(int sig)
     shmPTR->nanoseconds = 0;
       sem = sem_open ("sem1004", O_CREAT | O_EXCL, 0644, 0);
       sem_close(sem);
-    //printf("Server(Master) has filled %lld %lld seconds milliseconds  to shared memory...\n",
-     //       shmPTR->seconds, shmPTR->milliseconds);
-   for(x = 0; x < 4; x++){
+    
+    //make the resource vector
+   for(x = 0; x < 20; x++){
             srand(getrand++); 
             value =  1 + (rand()%10);
-             shmPTR->MaxClaims[x] = value;}        
-    
+             MaxClaims[x] = value;}        
+     value =  1 + (rand()%5);
+            shmPTR->MaxClaims = value;
       
       while(1){if(signal_interrupt == true) break;
           
       //fprintf(stderr,"bound milliseconds is %d\n", boundmill);
-          if(MaxProcesses >= 5) break;
+          if(MaxProcesses >= 4) break;
           int milliseconds = (1000*shmPTR->seconds) + (shmPTR->nanoseconds/1000000);
         //  fprintf(stderr, "milliseconds is %d\n", milliseconds);
           if(milliseconds >= boundmill){
@@ -203,8 +205,22 @@ void  ALARMhandler(int sig)
         return 1;}} 
       
 
+            
+
+          if(shmPTR->Requests != 0){
+          sem = sem_open("sem1004", 0); sem_wait(sem);
+          fprintf(stderr,"Request is %ld", shmPTR->Requests);
+          shmPTR->Requests = 0; sem_post(sem); sem_close(sem);}
+     //     fprintf(stderr, "child count is %d\n", shmPTR->childCount);
+          for(y = 0; y < shmPTR->termNum; y++){
+               shmPTR->TerminatedProc[y] = -2;
+               shmPTR->termNum = 0;}
+          if(forkValue == true){ 
+            value =  1 + (rand()%5);
+            shmPTR->MaxClaims = value;
+             forkValue = false; }
             long long int nanoseconds = 0;
-            while(nanoseconds < 2000000){
+            while(nanoseconds < 20000000){
              nanoseconds = nanoseconds + 100;
 
             }
@@ -212,22 +228,6 @@ void  ALARMhandler(int sig)
             if(shmPTR->nanoseconds >= 1000000000){
               shmPTR->seconds++;
               shmPTR->nanoseconds = shmPTR->nanoseconds - nanoseconds;}
-          //  shmPTR->ParentReady = 1;
-
-          if(forkValue == true){
-          sem = sem_open("sem1004", 0); sem_wait(sem);
-          fprintf(stderr,"Request is %ld", shmPTR->Requests);
-          shmPTR->Requests = 0;}
-     //     fprintf(stderr, "child count is %d\n", shmPTR->childCount);
-          for(y = 0; y < shmPTR->termNum; y++){fprintf(stderr, "%d", shmPTR->TerminatedProc[0]);
-               shmPTR->TerminatedProc[y] = -2;
-               shmPTR->termNum = 0;}
-          if(forkValue == true){
-          for(x = 0; x < 4; x++){
-            srand(getrand++); 
-            value =  1 + (rand()%10);
-            shmPTR->MaxClaims[x] = value;}
-             forkValue = false; }
        }
                      
            
