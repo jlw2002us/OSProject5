@@ -32,6 +32,14 @@ struct Memory {
      //int childCount;
 };
 
+      int noProcesses = 0;
+     int ResourceVector[20];
+     int AvailableVector[20];
+     int claimX = 0; int claimY = 0;
+     int allocX = 0; int allocY = 0;
+     int ClaimsMatrix[50][20];
+     int AllocMatrix[50][20];
+
 struct Memory  *shmPTR;
 bool signal_interrupt = false;
 
@@ -41,6 +49,23 @@ void helpoptions()
   printf("type ./parent -h for help options\n");
   printf("type ./parent -n -s with values for n and s.\n");
 
+}
+
+bool bankersAlgorithm(){
+   int x = 0;
+   for( x= 0; x < 3; x++)
+   {
+     if(shmPTR->Requests[2] == x)
+       AvailableVector[x] = AvailableVector[x] - shmPTR->Requests[1];
+       
+   }
+
+  //decrease appropriate resource request in available vector
+  
+
+  
+  
+  return true;
 }
 
 
@@ -59,7 +84,7 @@ void  ALARMhandler(int sig)
      sem_t *sem;
      int childCount = 0;
      int value = 0;
-     int MaxClaims[20];
+     
      bool forkValue = false;
      long int getrand = getpid();
      signal(SIGALRM, ALARMhandler);
@@ -68,12 +93,22 @@ void  ALARMhandler(int sig)
      int x;
      int ShmID;
      int boundmill = 0;
-     
+     int i,j;
      int y;
-     long int var[5];
+    //initialize arrays
+    for(i=0; i<50; i++) {
+      for(j=0;j<20;j++) {
+         ClaimsMatrix[i][j] = 0;
+      }
+   } 
+   for(i=0; i<50; i++) {
+      for(j=0;j<20;j++) {
+         AllocMatrix[i][j] = 0;
+      }
+   }
      alarm(2); //program can only run 2 seconds;
      
-     int i;//, z;
+     //int i;//, z;
      key_t ShmKEY;
      //int c,n,s;
      //int hflag;
@@ -170,27 +205,28 @@ void  ALARMhandler(int sig)
     shmPTR->Requests[0] = -2;
     shmPTR->seconds = 1;
     shmPTR->nanoseconds = 0;
-      sem = sem_open ("sem1004", O_CREAT | O_EXCL, 0644, 0);
-      sem_close(sem);
+      //sem = sem_open ("sem1004", O_CREAT | O_EXCL, 0644, 0);
+      //sem_close(sem);
      sem = sem_open ("sem1110", O_CREAT | O_EXCL, 0644, 1);
       sem_close(sem);
 
 
     //make the resource vector
-   for(x = 0; x < 20; x++){
+   for(x = 0; x < 3; x++){
             srand(getrand++); 
-            value =  1 + (rand()%10);
-             MaxClaims[x] = value;}        
-     value =  1 + (rand()%5);  //constant max bound is 5
+            value =  5 + (rand()%10);
+             ResourceVector[x] = value;
+             AvailableVector[x] = value;}        
+     value =  1 + (rand()%5);  //constant max bound is 5 for max claims
             shmPTR->MaxClaims = value;
       
       while(1){if(signal_interrupt == true) break;
-          
+          //fprintf(stderr, "child count is %d\n", childCount);
              //if(childCount > 10) break;
           int milliseconds = (1000*shmPTR->seconds) + (int)(shmPTR->nanoseconds/1000000);
         
           if((milliseconds >= boundmill)&&(childCount < 18)){
-            childCount++; 
+            childCount++;  noProcesses++;
           
             srand(getrand++);
             value = 1 + (rand()%500); //fork every 1 to 500 milliseconds
@@ -216,6 +252,7 @@ void  ALARMhandler(int sig)
              //sem = sem_open("sem1004", 0); sem_wait(sem);
              sem = sem_open("sem1110", 0); sem_wait(sem);
             fprintf(stderr,"Process %d requests %d of resource %d \n", shmPTR->RequestID,shmPTR->Requests[1], shmPTR->Requests[2]);
+            bankersAlgorithm();
             shmPTR->Requests[0] = -2;  sem_post(sem); sem_close(sem);}
           //fprintf(stderr, "term 0 is %d\n", shmPTR->TerminatedProc[0]);
           for(y = 0; y < shmPTR->termNum; y++){sem = sem_open("sem1110", 0); sem_wait(sem);
@@ -247,7 +284,7 @@ void  ALARMhandler(int sig)
        sleep(1);
       }while (true);
      
-      
+      //fprintf(stderr, "no of processes is %d\n", noProcesses);
      shmdt((void *) shmPTR);
      sem_close(sem);
      sem_unlink("sem1004");

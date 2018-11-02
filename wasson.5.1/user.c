@@ -67,16 +67,16 @@ key_t ShmKEY;
                 sem = sem_open("sem1110", 0); sem_wait(sem);
                shmPTR->Requests[0] = 0; srand(getrand++); value = 1 + (rand()%shmPTR->MaxClaims);//make request number
                shmPTR->Requests[1] = value; 
-               srand(getrand++); value = (rand()%19); //make claim of particular resource
+               srand(getrand++); value = (rand()%3); //make claim of particular resource
                shmPTR->Requests[2] = value;  
-               //boundmil =  1000*shmPTR->seconds + (int)(shmPTR->nanoseconds/1000000) + value;
+               boundmil =  1000*shmPTR->seconds + (int)(shmPTR->nanoseconds/1000000) + value;
                shmPTR->RequestID = processID; sem_post(sem); sem_close(sem);
                 //fprintf(stderr,"Process %d requests %d of resource %d \n", shmPTR->RequestID,shmPTR->Requests[1], shmPTR->Requests[2]);
                  //sem = sem_open("sem1004", 1);sem_post(sem), sem_close(sem);
                srand(getrand++);
                value = 1 + (rand()%100);
                //fprintf(stderr,"process %d value is %d\n", processID, value);
-            if(value <= 35) break;
+            if(value <= 10) break;
          }
      }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
       sem = sem_open("sem1110", 0); sem_wait(sem);shmPTR->TerminatedProc[shmPTR->termNum] = processID;
