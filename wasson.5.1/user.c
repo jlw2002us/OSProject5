@@ -53,11 +53,12 @@ key_t ShmKEY;
                                                                                                                                                                                                                                                                                                                     printf("*** shmat error(client) ***\n");
                                                                                                                                                                                                                                                                                                                                                                           exit(1);
                                                                                                                                                                                                                                                                                                                                                                                                                                       }
-      srand(getrand++);
-            value = 1 + (rand()%100); 
+     shmPTR->processID = (int)getpid(); 
+     srand(getrand++);
+     value = 1 + (rand()%100); 
       boundmil =  1000*shmPTR->seconds + (int)(shmPTR->nanoseconds/1000000) + value;
      //fprintf(stderr, "max claim is %d\n", shmPTR->MaxClaims);
-     processID = shmPTR->processID;
+     processID = shmPTR->processID; 
      fprintf(stderr,"My process id is %d\n", shmPTR->processID);
      while(true){  
             milliseconds = 1000*shmPTR->seconds + (int)(shmPTR->nanoseconds/1000000);
@@ -69,7 +70,7 @@ key_t ShmKEY;
              srand(getrand++);
             value = 1 + (rand()%100);
             
-            if(value <= 30) break;
+            if(value <= 45) break;
          }
      }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               processID = shmPTR->processID;
       shmPTR->TerminatedProc[shmPTR->termNum] = processID;

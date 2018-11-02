@@ -183,23 +183,22 @@ void  ALARMhandler(int sig)
       
       while(1){if(signal_interrupt == true) break;
           
-      //fprintf(stderr,"bound milliseconds is %d\n", boundmill);
-          if(MaxProcesses >= 17) break;
+           //if(MaxProcesses >=  25) break;
           int milliseconds = (1000*shmPTR->seconds) + (int)(shmPTR->nanoseconds/1000000);
         //  fprintf(stderr, "milliseconds is %d\n", milliseconds);
-          if(milliseconds >= boundmill){
+          if((milliseconds >= boundmill)&&(childCount < 18)){
             MaxProcesses++; childCount++; 
-            fprintf(stderr, "child count is %d\n", childCount);
+          //  fprintf(stderr, "child count is %d\n", childCount);
             srand(getrand++);
             value = 1 + (rand()%500); //fork every 1 to 500 milliseconds
             //fprintf(stderr, "Value is %d\n", value);
             boundmill = shmPTR->seconds*1000 + (int)(shmPTR->nanoseconds/1000000) + value;
-            shmPTR->processID = MaxProcesses;
+            //shmPTR->processID = MaxProcesses;
 
             forkValue = true;
             if (fork() == 0) {
-
-             shmdt((void *) shmPTR);
+            //    shmPTR->processID = (int)getpid();
+             
                char *args[]={"./user",NULL};
                 execvp(args[0],args);
          
@@ -212,19 +211,19 @@ void  ALARMhandler(int sig)
 
           if(shmPTR->Requests[0] != -2){
           sem = sem_open("sem1004", 0); sem_wait(sem);
-          fprintf(stderr,"Process %d requests %d", shmPTR->RequestID,shmPTR->Requests[0]);
-          shmPTR->Requests[0] = -2; sem_post(sem); sem_close(sem);}
+          //fprintf(stderr,"Process %d requests %d\n", shmPTR->RequestID,shmPTR->Requests[0]);
+          shmPTR->Requests[0] = -2; }
           //fprintf(stderr, "term 0 is %d\n", shmPTR->TerminatedProc[0]);
           for(y = 0; y < shmPTR->termNum; y++){
-               shmPTR->TerminatedProc[y] = -2; fprintf(stderr, "%s", "hello");
+               shmPTR->TerminatedProc[y] = -2; //fprintf(stderr, "%s", "hello");
                shmPTR->termNum = 0;childCount--;}
           if(forkValue == true){ 
             value =  1 + (rand()%5);
             shmPTR->MaxClaims = value;
              forkValue = false; }
             long long int nanoseconds = 0;
-            while(nanoseconds < 200000000){
-             nanoseconds = nanoseconds + 30;
+            while(nanoseconds < 20000000){
+             nanoseconds = nanoseconds + 185;
 
             }
             shmPTR->nanoseconds = shmPTR->nanoseconds + nanoseconds;
