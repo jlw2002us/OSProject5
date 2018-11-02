@@ -172,7 +172,10 @@ void  ALARMhandler(int sig)
     shmPTR->nanoseconds = 0;
       sem = sem_open ("sem1004", O_CREAT | O_EXCL, 0644, 0);
       sem_close(sem);
-    
+     sem = sem_open ("sem1110", O_CREAT | O_EXCL, 0644, 1);
+      sem_close(sem);
+
+
     //make the resource vector
    for(x = 0; x < 20; x++){
             srand(getrand++); 
@@ -183,7 +186,7 @@ void  ALARMhandler(int sig)
       
       while(1){if(signal_interrupt == true) break;
           
-             //if(childCount > 18) break;
+             //if(childCount > 10) break;
           int milliseconds = (1000*shmPTR->seconds) + (int)(shmPTR->nanoseconds/1000000);
         
           if((milliseconds >= boundmill)&&(childCount < 18)){
@@ -210,20 +213,21 @@ void  ALARMhandler(int sig)
             
 
           if(shmPTR->Requests[0] != -2){
-            sem = sem_open("sem1004", 0); sem_wait(sem);
+             //sem = sem_open("sem1004", 0); sem_wait(sem);
+             sem = sem_open("sem1110", 0); sem_wait(sem);
             fprintf(stderr,"Process %d requests %d of resource %d \n", shmPTR->RequestID,shmPTR->Requests[1], shmPTR->Requests[2]);
-            shmPTR->Requests[0] = -2; }
+            shmPTR->Requests[0] = -2;  sem_post(sem); sem_close(sem);}
           //fprintf(stderr, "term 0 is %d\n", shmPTR->TerminatedProc[0]);
-          for(y = 0; y < shmPTR->termNum; y++){
+          for(y = 0; y < shmPTR->termNum; y++){sem = sem_open("sem1110", 0); sem_wait(sem);
                shmPTR->TerminatedProc[y] = -2; //fprintf(stderr, "%s", "hello");
-               shmPTR->termNum = 0;childCount--;}
+               shmPTR->termNum = 0;sem_post(sem); sem_close(sem); childCount--;}
           if(forkValue == true){ 
             value =  1 + (rand()%5);
             shmPTR->MaxClaims = value;
              forkValue = false; }
             long long int nanoseconds = 0;
-            while(nanoseconds < 200000000){
-             nanoseconds = nanoseconds + 85;
+            while(nanoseconds < 2000000){
+             nanoseconds = nanoseconds + 50;
 
             }
             shmPTR->nanoseconds = shmPTR->nanoseconds + nanoseconds;
@@ -246,7 +250,8 @@ void  ALARMhandler(int sig)
       
      shmdt((void *) shmPTR);
      sem_close(sem);
-     sem_unlink("Sem1004");
+     sem_unlink("sem1004");
+      sem_unlink("sem1110");
       killpg(getpgid(getpid()), SIGTERM);
      printf("Server has detached its shared memory...\n");
      shmctl(ShmID, IPC_RMID, NULL);

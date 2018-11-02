@@ -64,22 +64,23 @@ key_t ShmKEY;
             milliseconds = 1000*shmPTR->seconds + (int)(shmPTR->nanoseconds/1000000);
      //       fprintf(stderr,"milliseconds is %d", milliseconds);
             if((shmPTR->Requests[0] == -2)&&(milliseconds >= boundmil)) {
-                //fprintf(stderr,"milliseconds is %d\n", milliseconds);
+                sem = sem_open("sem1110", 0); sem_wait(sem);
                shmPTR->Requests[0] = 0; srand(getrand++); value = 1 + (rand()%shmPTR->MaxClaims);//make request number
                shmPTR->Requests[1] = value; 
                srand(getrand++); value = (rand()%19); //make claim of particular resource
                shmPTR->Requests[2] = value;  
-               boundmil =  1000*shmPTR->seconds + (int)(shmPTR->nanoseconds/1000000) + value;
-               shmPTR->RequestID = processID;
-               sem = sem_open("sem1004", 1);sem_post(sem), sem_close(sem);
+               //boundmil =  1000*shmPTR->seconds + (int)(shmPTR->nanoseconds/1000000) + value;
+               shmPTR->RequestID = processID; sem_post(sem); sem_close(sem);
+                //fprintf(stderr,"Process %d requests %d of resource %d \n", shmPTR->RequestID,shmPTR->Requests[1], shmPTR->Requests[2]);
+                 //sem = sem_open("sem1004", 1);sem_post(sem), sem_close(sem);
                srand(getrand++);
                value = 1 + (rand()%100);
-            
-            if(value <= 45) break;
+               //fprintf(stderr,"process %d value is %d\n", processID, value);
+            if(value <= 35) break;
          }
-     }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               processID = shmPTR->processID;
-      shmPTR->TerminatedProc[shmPTR->termNum] = processID;
-      shmPTR->termNum++;
+     }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+      sem = sem_open("sem1110", 0); sem_wait(sem);shmPTR->TerminatedProc[shmPTR->termNum] = processID;
+      shmPTR->termNum++; sem_post(sem); sem_close(sem);
       //fprintf(stderr, "child count is %d\n", shmPTR->childCount);
      // shmPTR->childCount = shmPTR->childCount - 1;
       shmdt((void *) shmPTR);
