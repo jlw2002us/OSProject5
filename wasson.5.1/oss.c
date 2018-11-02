@@ -64,11 +64,11 @@ void  ALARMhandler(int sig)
      long int getrand = getpid();
      signal(SIGALRM, ALARMhandler);
      //int claimsMatrix[4][20];
-     pid_t childID;
+     
      int x;
      int ShmID;
      int boundmill = 0;
-     int MaxProcesses = 0;
+     
      int y;
      long int var[5];
      alarm(2); //program can only run 2 seconds;
@@ -183,12 +183,12 @@ void  ALARMhandler(int sig)
       
       while(1){if(signal_interrupt == true) break;
           
-           //if(MaxProcesses >=  25) break;
+             //if(childCount > 18) break;
           int milliseconds = (1000*shmPTR->seconds) + (int)(shmPTR->nanoseconds/1000000);
-        //  fprintf(stderr, "milliseconds is %d\n", milliseconds);
+        
           if((milliseconds >= boundmill)&&(childCount < 18)){
-            MaxProcesses++; childCount++; 
-          //  fprintf(stderr, "child count is %d\n", childCount);
+            childCount++; 
+          
             srand(getrand++);
             value = 1 + (rand()%500); //fork every 1 to 500 milliseconds
             //fprintf(stderr, "Value is %d\n", value);
@@ -210,9 +210,9 @@ void  ALARMhandler(int sig)
             
 
           if(shmPTR->Requests[0] != -2){
-          sem = sem_open("sem1004", 0); sem_wait(sem);
-          //fprintf(stderr,"Process %d requests %d\n", shmPTR->RequestID,shmPTR->Requests[0]);
-          shmPTR->Requests[0] = -2; }
+            sem = sem_open("sem1004", 0); sem_wait(sem);
+            fprintf(stderr,"Process %d requests %d of resource %d \n", shmPTR->RequestID,shmPTR->Requests[1], shmPTR->Requests[2]);
+            shmPTR->Requests[0] = -2; }
           //fprintf(stderr, "term 0 is %d\n", shmPTR->TerminatedProc[0]);
           for(y = 0; y < shmPTR->termNum; y++){
                shmPTR->TerminatedProc[y] = -2; //fprintf(stderr, "%s", "hello");
@@ -222,8 +222,8 @@ void  ALARMhandler(int sig)
             shmPTR->MaxClaims = value;
              forkValue = false; }
             long long int nanoseconds = 0;
-            while(nanoseconds < 20000000){
-             nanoseconds = nanoseconds + 185;
+            while(nanoseconds < 200000000){
+             nanoseconds = nanoseconds + 85;
 
             }
             shmPTR->nanoseconds = shmPTR->nanoseconds + nanoseconds;

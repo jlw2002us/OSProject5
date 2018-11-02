@@ -57,18 +57,23 @@ key_t ShmKEY;
      srand(getrand++);
      value = 1 + (rand()%100); 
       boundmil =  1000*shmPTR->seconds + (int)(shmPTR->nanoseconds/1000000) + value;
-     //fprintf(stderr, "max claim is %d\n", shmPTR->MaxClaims);
+      //fprintf(stderr, "max claim is %d\n", shmPTR->MaxClaims);
      processID = shmPTR->processID; 
-     fprintf(stderr,"My process id is %d\n", shmPTR->processID);
+     //fprintf(stderr,"My process id is %d\n", shmPTR->processID);
      while(true){  
             milliseconds = 1000*shmPTR->seconds + (int)(shmPTR->nanoseconds/1000000);
      //       fprintf(stderr,"milliseconds is %d", milliseconds);
             if((shmPTR->Requests[0] == -2)&&(milliseconds >= boundmil)) {
                 //fprintf(stderr,"milliseconds is %d\n", milliseconds);
-            shmPTR->Requests[0] = 0;  shmPTR->RequestID = processID;
-             sem = sem_open("sem1004", 1);sem_post(sem), sem_close(sem);
-             srand(getrand++);
-            value = 1 + (rand()%100);
+               shmPTR->Requests[0] = 0; srand(getrand++); value = 1 + (rand()%shmPTR->MaxClaims);//make request number
+               shmPTR->Requests[1] = value; 
+               srand(getrand++); value = (rand()%19); //make claim of particular resource
+               shmPTR->Requests[2] = value;  
+               boundmil =  1000*shmPTR->seconds + (int)(shmPTR->nanoseconds/1000000) + value;
+               shmPTR->RequestID = processID;
+               sem = sem_open("sem1004", 1);sem_post(sem), sem_close(sem);
+               srand(getrand++);
+               value = 1 + (rand()%100);
             
             if(value <= 45) break;
          }
