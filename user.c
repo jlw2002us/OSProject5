@@ -60,7 +60,7 @@ key_t ShmKEY;
                 sem = sem_open("sem1113", 0); sem_wait(sem);
                shmPTR->Requests[0] = 0; srand(getrand++); value = 1 + (rand()%MaxClaims);//make request number
                shmPTR->Requests[1] = value; 
-               srand(getrand++); value = (rand()%3); //make claim of particular resource
+               srand(getrand++); value = 1 + (rand()%3); //make claim of particular resource
                shmPTR->Requests[2] = value; shmPTR->Requests[3] = MaxClaims; 
                boundmil =  1000*shmPTR->seconds + (int)(shmPTR->nanoseconds/1000000) + value;
                shmPTR->RequestID = processID; sem_post(sem); sem_close(sem);

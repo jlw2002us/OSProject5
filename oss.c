@@ -32,8 +32,8 @@ struct Memory {
      int AvailableVector[20];
      int claimX = 0; int claimY = 0;
      int allocX = 0; int allocY = 0;
-     int ClaimsMatrix[50][20];
-     int AllocMatrix[50][20];
+     int ClaimsMatrix[30][22];
+     int AllocMatrix[30][22];
 
 struct Memory  *shmPTR;
 bool signal_interrupt = false;
@@ -46,7 +46,8 @@ void helpoptions()
 
 }
 bool bankersAlgorithm(){
-   int x = 0;
+    int j,i;
+    int x = 0;
    //make initial check
    for( x= 0; x < 3; x++)
    {
@@ -62,6 +63,17 @@ bool bankersAlgorithm(){
       {
           AvailableVector[x] = AvailableVector[x] - shmPTR->Requests[1];
       }
+    }
+   //enter its max claims if it hasn't been already
+   for(i=0; i<30; i++) { if(ClaimsMatrix[i][0] == shmPTR->RequestID) break;
+             if(ClaimsMatrix[i][0] == 0){
+                ClaimsMatrix[i][0] = shmPTR->RequestID;
+                for(j= 1;j< 4;j++) {
+                       ClaimsMatrix[i][j] = shmPTR->Requests[3];
+                       //fprintf(stderr,"%d", ClaimsMatrix[i][j]);
+                 }
+                 break;
+              }
     }
     return true;
 }
@@ -90,13 +102,13 @@ void  ALARMhandler(int sig)
      int i,j;
      int y;
     //initialize arrays
-    for(i=0; i<50; i++) {
-             for(j=0;j<20;j++) {
+    for(i=0; i<30; i++) {
+             for(j=0;j<22;j++) {
                        ClaimsMatrix[i][j] = 0;
                              }
                                 } 
-                                   for(i=0; i<50; i++) {
-                                         for(j=0;j<20;j++) {
+                                   for(i=0; i<30; i++) {
+                                         for(j=0;j<22;j++) {
                                                   AllocMatrix[i][j] = 0;
                                                         }
                                                            }
@@ -119,7 +131,7 @@ void  ALARMhandler(int sig)
     shmPTR->processID = 0;
      sem = sem_open ("sem1113", O_CREAT | O_EXCL, 0644, 1);
       sem_close(sem);
-       for(x = 0; x < 3; x++){
+       for(x = 1; x <= 3; x++){
             srand(getrand++); 
             value =  5 + (rand()%10);
              ResourceVector[x] = value;
@@ -176,7 +188,13 @@ void  ALARMhandler(int sig)
        sleep(1);
       }while (true);
      
-      //fprintf(stderr, "no of processes is %d\n", noProcesses);
+   //   for(i=0; i<30; i++) {
+     //        for(j=0;j<4;j++) {
+       //                fprintf(stderr,"%d ", ClaimsMatrix[i][j]);
+         //                    }
+           //         fprintf(stderr,"%s", "\n");
+             //                   }
+
       shmdt((void *) shmPTR);
                sem_close(sem);
       //               sem_unlink("sem1004");
