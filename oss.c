@@ -145,7 +145,7 @@ void  ALARMhandler(int sig)
       
       while(1){if(signal_interrupt == true) break;
           //int milliseconds = (1000*shmPTR->seconds) + (int)(shmPTR->nanoseconds/1000000);
-          if(noProcesses > 2) break;
+          if(noProcesses > 3) break;
           if((milliseconds >= boundmill)&&(childCount < 18)){
             childCount++;  noProcesses++; srand(getrand++);
             value = 1 + (rand()%5); shmPTR->MaxClaims = value; 
@@ -165,7 +165,12 @@ void  ALARMhandler(int sig)
            else{ //add time and run banker's algorithm
            milliseconds = (1000*shmPTR->seconds) + (int)(shmPTR->nanoseconds/1000000);
           for(y = 0; y < shmPTR->termNum; y++){sem = sem_open("sem1113", 0); sem_wait(sem);
-               shmPTR->TerminatedProc[y] = -2; //fprintf(stderr, "%s", "hello");
+               for(i = 0; i < 30; i ++){
+                  if (shmPTR->TerminatedProc[y] == AllocMatrix[i][0]){
+                     for(j=-1; j <=3; j++){
+                        AvailableVector[j] = AvailableVector[j] + AllocMatrix[i][j];
+                   }
+                }}shmPTR->TerminatedProc[y] = -2; fprintf(stderr, "%s", "hello");
                shmPTR->termNum = 0;sem_post(sem); sem_close(sem); childCount--;}
 
 
