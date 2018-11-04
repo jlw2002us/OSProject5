@@ -145,7 +145,7 @@ void  ALARMhandler(int sig)
       
       while(1){if(signal_interrupt == true) break;
           //int milliseconds = (1000*shmPTR->seconds) + (int)(shmPTR->nanoseconds/1000000);
-          if(noProcesses > 1) break;
+          if(noProcesses > 2) break;
           if((milliseconds >= boundmill)&&(childCount < 18)){
             childCount++;  noProcesses++; srand(getrand++);
             value = 1 + (rand()%5); shmPTR->MaxClaims = value; 
@@ -186,15 +186,7 @@ void  ALARMhandler(int sig)
                                                                                                                                                                                                                                                                                                                                           }
                                                                                                              //
             
-            //decrease request number from temp vector
-            for (x = 1; x <=3; x++){
-                if(shmPTR->Requests[2] == x)
-                    AvailableVector[x] = AvailableVector[x] - shmPTR->Requests[1];
-            }
-             //copy available vector to temp vector
-             for (x= 1; x <= 3; x++){
-                tempAvail[x] = AvailableVector[x];
-            }
+            
 
              //add process to allocation matrix if not already there
              for (i = 0; i < 30; i++)
@@ -205,14 +197,6 @@ void  ALARMhandler(int sig)
             }
             
 
-            //add request to allocation matrix
-            for (i = 0; i < 30; i++){
-              if(shmPTR->RequestID == AllocMatrix[i][0]){
-                for(j = 1; j <= 3; j++){
-                if(j == shmPTR->Requests[2])
-                  AllocMatrix[i][j] = AllocMatrix[i][j] + shmPTR->Requests[1];
-                 }}
-            }
             //for (i = 0; i < 20; i++){
             //
               // for(j = 0; j <= 3; j++){
@@ -222,27 +206,31 @@ void  ALARMhandler(int sig)
                    //                                                                                                                                                       }
              //run banker's algorithm            
              for (i=0; i < 30; i++){
-               if((ClaimsMatrix[i][0] != -2) && (ClaimsMatrix[i][0] != 0)){
-                  //fprintf(stderr, "claims matrix is %d\n",shmPTR->ClaimsMatrix[i][1]);
-                 for(j = 1; j <=3; j++){ fprintf(stderr,"temp value  is %d\n", tempAvail[j]);
-                      if(tempAvail[j] < (ClaimsMatrix[i][j] - AllocMatrix[i][j])){
-                        bankers = 0; break;} if(ClaimsMatrix[i][j] - AllocMatrix[i][j] < 0){ bankers = 0; break;}
-                      else{tempAvail[j] = tempAvail[j] -(ClaimsMatrix[i][j] - AllocMatrix[i][j]) + ClaimsMatrix[i][j];}
-                   }} if (bankers == 0) break;
-                      } 
+               if(shmPTR->RequestID == AllocMatrix[i][0]){
+                  for( j = 1; j <=3; j++){
+                     if(shmPTR->Requests[2] == j){
+                        if(shmPTR->Requests[1] > AvailableVector[j]){
+                           bankers = 0; break;}
+                        if(shmPTR->Requests[1] + AllocMatrix[i][j] > ClaimsMatrix[i][j])
+                          { bankers = 0; break;}
+                     }
+                  }}
+                  if( bankers == 0) break;
+             }
             
             fprintf(stderr, "bankers value is %d\n", bankers);
-            if(bankers == 0){
+            if(bankers == 1){
+               
 
                for (x = 1; x <=3; x++){
                  if(shmPTR->Requests[2] == x)
-                 AvailableVector[x] = AvailableVector[x] + shmPTR->Requests[1];
+                  AvailableVector[x] = AvailableVector[x] - shmPTR->Requests[1];
                }
                for (i = 0; i < 30; i++){
-               if(shmPTR->RequestID == AllocMatrix[i][0]){
+                if(shmPTR->RequestID == AllocMatrix[i][0]){
                   for(j = 1; j <= 3; j++){
                     if(j == shmPTR->Requests[2])
-                       AllocMatrix[i][j] = AllocMatrix[i][j]  - shmPTR->Requests[1]; //remove request from alloc matrix
+                       AllocMatrix[i][j] = AllocMatrix[i][j]  + shmPTR->Requests[1]; //add request to alloc matrix
                   }}
                }
             }
