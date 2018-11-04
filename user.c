@@ -15,7 +15,7 @@
 struct Memory {
      int MaxClaims;
      int  seconds;
-     int ClaimsMatrix[30][22];
+     //int ClaimsMatrix[30][22];
      long long int  nanoseconds;
      int TerminatedProc[2];
      int processID;
@@ -26,8 +26,9 @@ struct Memory {
 
 struct Memory  *shmPTR;
 int main() {
-key_t ShmKEY;
+  key_t ShmKEY;
   int value = 0;
+   int MaxClaims = 0;
    long int getrand = getpid();
    int boundmil = 0;
    int milliseconds = 0;
@@ -50,11 +51,12 @@ key_t ShmKEY;
                                                                                                                                                                                                                                                                                                                                                                                                                                       }
      shmPTR->processID++;
      srand(getrand++);
-     int MaxClaims = shmPTR->MaxClaims;
+     MaxClaims = shmPTR->MaxClaims;
      value = 1 + (rand()%100); 
       boundmil =  1000*shmPTR->seconds + (int)(shmPTR->nanoseconds/1000000) + value;
      processID = shmPTR->processID;
-     //fprintf(stderr, "My process ID is %d\n",shmPTR->processID); 
+      
+     //fprintf(stderr, "process %d claims is %d\n",processID, MaxClaims); 
      while(true){  
             milliseconds = 1000*shmPTR->seconds + (int)(shmPTR->nanoseconds/1000000);
      if((shmPTR->Requests[0] == -2)&&(milliseconds >= boundmil)) {
@@ -64,17 +66,17 @@ key_t ShmKEY;
                srand(getrand++); value = 1 + (rand()%3); //make claim of particular resource
                shmPTR->Requests[2] = value; 
                //enter its max claims if it hasn't been already
-                  for(i=0; i<30; i++) { if(shmPTR->ClaimsMatrix[i][0] == processID) break;
-                     if(shmPTR->ClaimsMatrix[i][0] == 0){
-                          shmPTR->ClaimsMatrix[i][0] = processID;
-                          for(j= 1;j< 4;j++) {
-                             shmPTR->ClaimsMatrix[i][j] = MaxClaims;
+                 // for(i=0; i<30; i++) { if(shmPTR->ClaimsMatrix[i][0] == processID) break;
+                    // if(shmPTR->ClaimsMatrix[i][0] == 0){
+                         // shmPTR->ClaimsMatrix[i][0] = processID;
+                         // for(j= 1;j< 4;j++) {
+                          //   shmPTR->ClaimsMatrix[i][j] = MaxClaims;
                                                                                                              //fprintf(stderr,"%d", ClaimsMatrix[i][j]);
-                          }
-                                                                                                                                               break;
-                                                                                                                                                             }
-                                                                                                                                                                 }
-                                                                                                                                                                  
+                        //  }
+                                                                                                                                               //break;
+                                                                                                                                                 //            }//
+                                                                                                                                                                 //}
+               shmPTR->MaxClaims = MaxClaims;                                                                                                                                                             
                boundmil =  1000*shmPTR->seconds + (int)(shmPTR->nanoseconds/1000000) + value;
                shmPTR->RequestID = processID; sem_post(sem); sem_close(sem);
        srand(getrand++);
@@ -84,13 +86,13 @@ key_t ShmKEY;
      }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
       sem = sem_open("sem1113", 0); sem_wait(sem);
       //remove from claims matrix
-      for(i = 0; i < 30; i++){
-         if(processID == shmPTR->ClaimsMatrix[i][0]){
-            shmPTR->ClaimsMatrix[i][0] = -2;
-            for(j=1; j< 4; j++){
-               shmPTR->ClaimsMatrix[i][j] = 0;}
-           break;}
-      } 
+      //for(i = 0; i < 30; i++){
+        // if(processID == shmPTR->ClaimsMatrix[i][0]){
+          //  shmPTR->ClaimsMatrix[i][0] = -2;
+           // for(j=1; j< 4; j++){
+             //  shmPTR->ClaimsMatrix[i][j] = 0;}
+           //break;}
+     // } 
         fprintf(stderr, "Process %d is exiting\n", processID); 
 
       shmPTR->TerminatedProc[shmPTR->termNum] = processID;

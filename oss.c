@@ -19,7 +19,7 @@
 struct Memory {
      int MaxClaims;
      int  seconds;
-     int ClaimsMatrix[30][22];
+     //int ClaimsMatrix[30][22];
      long long int  nanoseconds;
      int TerminatedProc[2];
      int processID;
@@ -33,7 +33,7 @@ struct Memory {
      int AvailableVector[20];
      int claimX = 0; int claimY = 0;
      //int allocX = 0; int allocY = 0;
-     //int ClaimsMatrix[30][22];
+     int ClaimsMatrix[30][22];
      int AllocMatrix[30][22];
 
 struct Memory  *shmPTR;
@@ -123,7 +123,7 @@ void  ALARMhandler(int sig)
     shmPTR->seconds = 1;
     for(i=0; i<30; i++) {
              for(j=0;j<4;j++) {
-                       shmPTR->ClaimsMatrix[i][j] = 0;
+                       ClaimsMatrix[i][j] = 0;
                              }
                     }
                                 
@@ -134,13 +134,14 @@ void  ALARMhandler(int sig)
       sem_close(sem);
        for(x = 1; x <= 3; x++){
             srand(getrand++); 
-            value =  (rand() % (6)) + 5;//rand number from 5 to 10
+            value = (rand() % (7 - 5)) + 5;//rand number from 5 to 10
+
              ResourceVector[x] = value;
              AvailableVector[x] = value;}
         for(x = 1; x<= 3; x++){
-           fprintf(stderr, "%d ", AvailableVector[x]);}        
-     value =  1 + (rand()%5);  //constant max bound is 5 for max claims
-            shmPTR->MaxClaims = value;
+           fprintf(stderr, "Resource Vector value is %d ", AvailableVector[x]);}        
+     //value =  1 + (rand()%5);  //constant max bound is 5 for max claims
+       //     shmPTR->MaxClaims = value;
       
       while(1){if(signal_interrupt == true) break;
           //int milliseconds = (1000*shmPTR->seconds) + (int)(shmPTR->nanoseconds/1000000);
@@ -163,34 +164,94 @@ void  ALARMhandler(int sig)
 
            else{ //add time and run banker's algorithm
            milliseconds = (1000*shmPTR->seconds) + (int)(shmPTR->nanoseconds/1000000);
+          for(y = 0; y < shmPTR->termNum; y++){sem = sem_open("sem1113", 0); sem_wait(sem);
+               shmPTR->TerminatedProc[y] = -2; //fprintf(stderr, "%s", "hello");
+               shmPTR->termNum = 0;sem_post(sem); sem_close(sem); childCount--;}
+
+
           if(shmPTR->Requests[0] != -2){
                sem = sem_open("sem1113", 0); sem_wait(sem);
                fprintf(stderr,"Process %d requests %d of resource %d \n", shmPTR->RequestID,shmPTR->Requests[1], shmPTR->Requests[2]);
-            //copy availabe vector to temp available vector
-            for (x= 1; x <= 3; x++){
-                tempAvail[x] = AvailableVector[x];
-            }
+             //enter into claims matrix if not already there
+             
+             for(i=0; i<30; i++) { if(ClaimsMatrix[i][0] == shmPTR->RequestID) break;
+                     if(ClaimsMatrix[i][0] == 0){
+                          ClaimsMatrix[i][0] = shmPTR->RequestID;
+                          for(j= 1;j< 4;j++) {
+                              ClaimsMatrix[i][j] =   shmPTR->MaxClaims;
+                                                                                                             //fprintf(stderr,"%d", ClaimsMatrix[i][j]);
+              }                                                                                                                                                                       break;
+                                                                                                                                                                                                                                                                                                                                          }
+                                                                                                  
+                                                                                                                                                                                                                                                                                                                                          }
+                                                                                                             //
+            
             //decrease request number from temp vector
             for (x = 1; x <=3; x++){
                 if(shmPTR->Requests[2] == x)
-                    tempAvail[x] = tempAvail[x] - shmPTR->Requests[1];
+                    AvailableVector[x] = AvailableVector[x] - shmPTR->Requests[1];
             }
-            //for (x = 1; x <= 3; x++){
-             //  fprintf(stderr,"%d ",AvailableVector[x]);}
-             //for (x = 1; x <= 3; x++){
-              // fprintf(stderr,"%d ",tempAvail[x]);}
-            //run banker's algorithm
-            for (i=0; i < 30; i++){
-               if((shmPTR->ClaimsMatrix[i][0] != -2) && (shmPTR->ClaimsMatrix[i][0] != 0)){
-                 for(j = 1; j <=3; j++){  
-                 }
+             //copy available vector to temp vector
+             for (x= 1; x <= 3; x++){
+                tempAvail[x] = AvailableVector[x];
+            }
+
+             //add process to allocation matrix if not already there
+             for (i = 0; i < 30; i++)
+            { //fprintf(stderr, "alloc matrix is %d\n", AllocMatrix[i][0]);
+               if(shmPTR->RequestID == AllocMatrix[i][0]){ break;}
+               else if(AllocMatrix[i][0] == 0){
+                   AllocMatrix[i][0] = shmPTR->RequestID; break;}
+            }
+            
+
+            //add request to allocation matrix
+            for (i = 0; i < 30; i++){
+              if(shmPTR->RequestID == AllocMatrix[i][0]){
+                for(j = 1; j <= 3; j++){
+                if(j == shmPTR->Requests[2])
+                  AllocMatrix[i][j] = AllocMatrix[i][j] + shmPTR->Requests[1];
+                 }}
+            }
+            //for (i = 0; i < 20; i++){
+            //
+              // for(j = 0; j <= 3; j++){
+            //
+                //                                                                                                                                                                   fprintf(stderr, "%d ",AllocMatrix[i][j]);
+                 //                                                                                                                                                             }                                                                                                                                                                                      fprintf(stderr, "%s", "\n");
+                   //                                                                                                                                                       }
+             //run banker's algorithm            
+             for (i=0; i < 30; i++){
+               if((ClaimsMatrix[i][0] != -2) && (ClaimsMatrix[i][0] != 0)){
+                  //fprintf(stderr, "claims matrix is %d\n",shmPTR->ClaimsMatrix[i][1]);
+                 for(j = 1; j <=3; j++){ fprintf(stderr,"temp value  is %d\n", tempAvail[j]);
+                      if(tempAvail[j] < (ClaimsMatrix[i][j] - AllocMatrix[i][j])){
+                        bankers = 0; break;} if(ClaimsMatrix[i][j] - AllocMatrix[i][j] < 0){ bankers = 0; break;}
+                      else{tempAvail[j] = tempAvail[j] -(ClaimsMatrix[i][j] - AllocMatrix[i][j]) + ClaimsMatrix[i][j];}
+                   }} if (bankers == 0) break;
+                      } 
+            
+            fprintf(stderr, "bankers value is %d\n", bankers);
+            if(bankers == 0){
+
+               for (x = 1; x <=3; x++){
+                 if(shmPTR->Requests[2] == x)
+                 AvailableVector[x] = AvailableVector[x] + shmPTR->Requests[1];
+               }
+               for (i = 0; i < 30; i++){
+               if(shmPTR->RequestID == AllocMatrix[i][0]){
+                  for(j = 1; j <= 3; j++){
+                    if(j == shmPTR->Requests[2])
+                       AllocMatrix[i][j] = AllocMatrix[i][j]  - shmPTR->Requests[1]; //remove request from alloc matrix
+                  }}
                }
             }
+
+            bankers = 1;
+            
+
             shmPTR->Requests[0] = -2;  sem_post(sem); sem_close(sem);}
-             for(y = 0; y < shmPTR->termNum; y++){sem = sem_open("sem1113", 0); sem_wait(sem);
-               shmPTR->TerminatedProc[y] = -2; //fprintf(stderr, "%s", "hello");
-               shmPTR->termNum = 0;sem_post(sem); sem_close(sem); childCount--;}
-          
+                       
             long long int nanoseconds = 0;
             while(nanoseconds < 2000000){
              nanoseconds = nanoseconds + 30;
@@ -208,7 +269,7 @@ void  ALARMhandler(int sig)
      
    for(i=0; i<30; i++) {
              for(j=0;j<4;j++) {
-                       fprintf(stderr,"%d ", shmPTR->ClaimsMatrix[i][j]);
+                       fprintf(stderr,"%d ", ClaimsMatrix[i][j]);
                            }
                     fprintf(stderr,"%s", "\n");
                                 }
