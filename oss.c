@@ -87,7 +87,7 @@ void  ALARMhandler(int sig)
      int childCount = 0;
      int value = 0;
      pid_t childID;
-     bool bankers = true;
+     int bankers = 1;
      int tempAvail[20];
      long int getrand = getpid();
      signal(SIGALRM, ALARMhandler);
@@ -145,7 +145,7 @@ void  ALARMhandler(int sig)
       
       while(1){if(signal_interrupt == true) break;
           //int milliseconds = (1000*shmPTR->seconds) + (int)(shmPTR->nanoseconds/1000000);
-          //if(noProcesses > 10) break;
+          if(noProcesses > 3) break;
           if((milliseconds >= boundmill)&&(childCount < 18)){
             childCount++;  noProcesses++; srand(getrand++);
             value = 1 + (rand()%5); shmPTR->MaxClaims = value; 
@@ -164,6 +164,8 @@ void  ALARMhandler(int sig)
 
            else{ //add time and run banker's algorithm
            milliseconds = (1000*shmPTR->seconds) + (int)(shmPTR->nanoseconds/1000000);
+          
+           //see if children have exited
           for(y = 0; y < shmPTR->termNum; y++){sem = sem_open("sem1113", 0); sem_wait(sem);
                for(i = 0; i < 30; i ++){
                   if (shmPTR->TerminatedProc[y] == AllocMatrix[i][0]){
@@ -200,23 +202,31 @@ void  ALARMhandler(int sig)
                else if(AllocMatrix[i][0] == 0){
                    AllocMatrix[i][0] = shmPTR->RequestID; break;}
             }
-            
+ 
+           for (i = 0; i < 30; i++){
+                if(shmPTR->RequestID == AllocMatrix[i][0]){
+                  for(j = 1; j <= 5; j++){
+                    if(j == shmPTR->Requests[2])
+                       AllocMatrix[i][j] = AllocMatrix[i][j]  + shmPTR->Requests[1]; //add request to alloc matrix
+                  }}
+           }
+             for(i=0; i<30; i++) {
+             for(j=0;j<6;j++) {
+                       fprintf(stderr,"%d ", AllocMatrix[i][j]);
+                           }
+                  fprintf(stderr,"%s", "\n");
+                                }
+ 
 
-            //for (i = 0; i < 20; i++){
-            //
-              // for(j = 0; j <= 3; j++){
-            //
-                //                                                                                                                                                                   fprintf(stderr, "%d ",AllocMatrix[i][j]);
-                 //                                                                                                                                                             }                                                                                                                                                                                      fprintf(stderr, "%s", "\n");
-                   //                                                                                                                                                       }
-             //run banker's algorithm            
+            //see if process has exceeded its max claim           
              for (i=0; i < 30; i++){
                if(shmPTR->RequestID == AllocMatrix[i][0]){
                   for( j = 1; j <=5; j++){
+
                      if(shmPTR->Requests[2] == j){
-                        if(shmPTR->Requests[1] > AvailableVector[j]){
-                           bankers = 0; break;}
-                        if(shmPTR->Requests[1] + AllocMatrix[i][j] > ClaimsMatrix[i][j])
+
+                        
+                        if(AllocMatrix[i][j] > ClaimsMatrix[i][j])
                           { bankers = 0; break;}
                      }
                   }}
@@ -227,18 +237,20 @@ void  ALARMhandler(int sig)
             if(bankers == 1){
                
 
-               for (x = 1; x <=3; x++){
+               for (x = 1; x <=5; x++){
                  if(shmPTR->Requests[2] == x)
                   AvailableVector[x] = AvailableVector[x] - shmPTR->Requests[1];
                }
-               for (i = 0; i < 30; i++){
-                if(shmPTR->RequestID == AllocMatrix[i][0]){
-                  for(j = 1; j <= 5; j++){
-                    if(j == shmPTR->Requests[2])
-                       AllocMatrix[i][j] = AllocMatrix[i][j]  + shmPTR->Requests[1]; //add request to alloc matrix
-                  }}
+               
                }
-            }
+            else{
+               for(i = 0; i <30; i++){
+                 if(shmPTR->RequestID == AllocMatrix[i][0]){
+                    for(j = 1; j<=5; j++){
+                      if(j == shmPTR->Requests[2])
+                         AllocMatrix[i][j] = AllocMatrix[i][j] - shmPTR->Requests[1];}}}
+                 }
+            
 
             bankers = 1;
             
@@ -260,12 +272,12 @@ void  ALARMhandler(int sig)
        sleep(1);
       }while (true);
      
-   //for(i=0; i<30; i++) {
-     //        for(j=0;j<6;j++) {
-       //                fprintf(stderr,"%d ", ClaimsMatrix[i][j]);
-         //                  }
-           //        fprintf(stderr,"%s", "\n");
-             //                   }
+   for(i=0; i<30; i++) {
+             for(j=0;j<6;j++) {
+                       fprintf(stderr,"%d ", ClaimsMatrix[i][j]);
+                           }
+                   fprintf(stderr,"%s", "\n");
+                                }
 
       shmdt((void *) shmPTR);
                sem_close(sem);
