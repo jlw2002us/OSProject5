@@ -63,7 +63,7 @@ int main() {
                 sem = sem_open("sem1113", 0); sem_wait(sem);
                shmPTR->Requests[0] = 0; srand(getrand++); value = 1 + (rand()%MaxClaims);//make request number
                shmPTR->Requests[1] = value; 
-               srand(getrand++); value = 1 + (rand()%3); //make claim of particular resource
+               srand(getrand++); value = 1 + (rand()%5); //make claim of particular resource
                shmPTR->Requests[2] = value; 
                //enter its max claims if it hasn't been already
                  // for(i=0; i<30; i++) { if(shmPTR->ClaimsMatrix[i][0] == processID) break;
@@ -81,7 +81,7 @@ int main() {
                shmPTR->RequestID = processID; sem_post(sem); sem_close(sem);
        srand(getrand++);
                value = 1 + (rand()%100);
-       if(value <= 10) break;
+       if(value <= 10){ shmPTR->Requests[0] = -2; break;}
          }
      }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
       sem = sem_open("sem1113", 0); sem_wait(sem);
@@ -93,8 +93,8 @@ int main() {
              //  shmPTR->ClaimsMatrix[i][j] = 0;}
            //break;}
      // } 
-        fprintf(stderr, "Process %d is exiting\n", processID); 
-
+        //fprintf(stderr, "Process %d is exiting\n", processID); 
+      //shmPTR->RequestID = -2;
       shmPTR->TerminatedProc[shmPTR->termNum] = processID;
       shmPTR->termNum++; sem_post(sem); sem_close(sem);
        shmdt((void *) shmPTR);

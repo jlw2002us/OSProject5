@@ -122,7 +122,7 @@ void  ALARMhandler(int sig)
     } shmPTR->Requests[0] = -2;
     shmPTR->seconds = 1;
     for(i=0; i<30; i++) {
-             for(j=0;j<4;j++) {
+             for(j=0;j<8;j++) {
                        ClaimsMatrix[i][j] = 0;
                              }
                     }
@@ -132,20 +132,20 @@ void  ALARMhandler(int sig)
     shmPTR->processID = 0;
      sem = sem_open ("sem1113", O_CREAT | O_EXCL, 0644, 1);
       sem_close(sem);
-       for(x = 1; x <= 3; x++){
+       for(x = 1; x <= 5; x++){
             srand(getrand++); 
-            value = (rand() % (7 - 5)) + 5;//rand number from 5 to 10
+            value = 1 +(rand()%10);//rand number from 1 to 10
 
              ResourceVector[x] = value;
              AvailableVector[x] = value;}
-        for(x = 1; x<= 3; x++){
+        for(x = 1; x<= 5; x++){
            fprintf(stderr, "Resource Vector value is %d ", AvailableVector[x]);}        
      //value =  1 + (rand()%5);  //constant max bound is 5 for max claims
        //     shmPTR->MaxClaims = value;
       
       while(1){if(signal_interrupt == true) break;
           //int milliseconds = (1000*shmPTR->seconds) + (int)(shmPTR->nanoseconds/1000000);
-          if(noProcesses > 3) break;
+          //if(noProcesses > 10) break;
           if((milliseconds >= boundmill)&&(childCount < 18)){
             childCount++;  noProcesses++; srand(getrand++);
             value = 1 + (rand()%5); shmPTR->MaxClaims = value; 
@@ -167,10 +167,10 @@ void  ALARMhandler(int sig)
           for(y = 0; y < shmPTR->termNum; y++){sem = sem_open("sem1113", 0); sem_wait(sem);
                for(i = 0; i < 30; i ++){
                   if (shmPTR->TerminatedProc[y] == AllocMatrix[i][0]){
-                     for(j=-1; j <=3; j++){
+                     for(j=-1; j <=5; j++){
                         AvailableVector[j] = AvailableVector[j] + AllocMatrix[i][j];
                    }
-                }}shmPTR->TerminatedProc[y] = -2; fprintf(stderr, "%s", "hello");
+                }}fprintf(stderr, "Process %d is exiting\n", shmPTR->TerminatedProc[y]);shmPTR->TerminatedProc[y] = -2;
                shmPTR->termNum = 0;sem_post(sem); sem_close(sem); childCount--;}
 
 
@@ -178,11 +178,11 @@ void  ALARMhandler(int sig)
                sem = sem_open("sem1113", 0); sem_wait(sem);
                fprintf(stderr,"Process %d requests %d of resource %d \n", shmPTR->RequestID,shmPTR->Requests[1], shmPTR->Requests[2]);
              //enter into claims matrix if not already there
-             
+                
              for(i=0; i<30; i++) { if(ClaimsMatrix[i][0] == shmPTR->RequestID) break;
                      if(ClaimsMatrix[i][0] == 0){
                           ClaimsMatrix[i][0] = shmPTR->RequestID;
-                          for(j= 1;j< 4;j++) {
+                          for(j= 1;j< 6;j++) {
                               ClaimsMatrix[i][j] =   shmPTR->MaxClaims;
                                                                                                              //fprintf(stderr,"%d", ClaimsMatrix[i][j]);
               }                                                                                                                                                                       break;
@@ -212,7 +212,7 @@ void  ALARMhandler(int sig)
              //run banker's algorithm            
              for (i=0; i < 30; i++){
                if(shmPTR->RequestID == AllocMatrix[i][0]){
-                  for( j = 1; j <=3; j++){
+                  for( j = 1; j <=5; j++){
                      if(shmPTR->Requests[2] == j){
                         if(shmPTR->Requests[1] > AvailableVector[j]){
                            bankers = 0; break;}
@@ -233,7 +233,7 @@ void  ALARMhandler(int sig)
                }
                for (i = 0; i < 30; i++){
                 if(shmPTR->RequestID == AllocMatrix[i][0]){
-                  for(j = 1; j <= 3; j++){
+                  for(j = 1; j <= 5; j++){
                     if(j == shmPTR->Requests[2])
                        AllocMatrix[i][j] = AllocMatrix[i][j]  + shmPTR->Requests[1]; //add request to alloc matrix
                   }}
@@ -260,12 +260,12 @@ void  ALARMhandler(int sig)
        sleep(1);
       }while (true);
      
-   for(i=0; i<30; i++) {
-             for(j=0;j<4;j++) {
-                       fprintf(stderr,"%d ", ClaimsMatrix[i][j]);
-                           }
-                    fprintf(stderr,"%s", "\n");
-                                }
+   //for(i=0; i<30; i++) {
+     //        for(j=0;j<6;j++) {
+       //                fprintf(stderr,"%d ", ClaimsMatrix[i][j]);
+         //                  }
+           //        fprintf(stderr,"%s", "\n");
+             //                   }
 
       shmdt((void *) shmPTR);
                sem_close(sem);
