@@ -63,7 +63,7 @@ int main() {
                 sem = sem_open("sem1113", 0); sem_wait(sem);
                shmPTR->Requests[0] = 0; srand(getrand++); value = 1 + (rand()%MaxClaims);//make request number
                shmPTR->Requests[1] = value; 
-               srand(getrand++); value = 1 + (rand()%5); //make claim of particular resource
+               srand(getrand++); value = 1 + (rand()%20); //make claim of particular resource
                shmPTR->Requests[2] = value; 
                //enter its max claims if it hasn't been already
                  // for(i=0; i<30; i++) { if(shmPTR->ClaimsMatrix[i][0] == processID) break;
