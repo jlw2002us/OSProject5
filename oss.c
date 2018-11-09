@@ -156,7 +156,7 @@ void  ALARMhandler(int sig)
       
       while(1){if(signal_interrupt == true) break;
           //int milliseconds = (1000*shmPTR->seconds) + (int)(shmPTR->nanoseconds/1000000);
-          if(noProcesses > 1) break;
+          //if(noProcesses > 17) break;
           if((milliseconds >= boundmill)&&(childCount < 18)){
             childCount++;  noProcesses++; srand(getrand++);
             value = 1 + (rand()%5); shmPTR->MaxClaims = value; 
@@ -269,23 +269,23 @@ void  ALARMhandler(int sig)
  
     
  
-               fprintf(stderr,"%s","\nThe Claim Vector is: ");
-               for (i = 1; i < 6; i++)
-               fprintf(stderr,"%d ", ResourceVector[i]);
+               //fprintf(stderr,"%s","\nThe Claim Vector is: ");
+               //for (i = 1; i < 6; i++)
+               //fprintf(stderr,"%d ", ResourceVector[i]);
  
                fprintf(stderr,"%s","\nThe Allocated Resource Table:\n");
                for (i = 0; i < count; i++) {
                 for (j = 1; j < 6; j++)
                    fprintf(stderr,"\t%d", newAlloc[i][j]);
-               printf("\n");
+                printf("\n");
                }
  
               fprintf(stderr,"%s","\nThe Maximum Claim Table:\n");
               for (i = 0; i < count; i++) {
                 for (j = 1; j < 6; j++)
-                 fprintf(stderr,"\t%d", newMax[i][j]);
-              printf("\n");
-              }
+                  fprintf(stderr,"\t%d", newMax[i][j]);
+                printf("\n");
+               }
              for (i = 0; i < count; i++){
                for (j = 1; j < 6; j++)
                 alloc[j] = 0;}
@@ -295,16 +295,16 @@ void  ALARMhandler(int sig)
                for (j = 1; j < 6; j++)
                 alloc[j] += newAlloc[i][j];}
  
-             fprintf(stderr,"%s","\nAllocated resources: ");
-             for (i = 1; i < 6; i++)
-               fprintf(stderr,"%d ", alloc[i]);
+             //fprintf(stderr,"%s","\nAllocated resources: ");
+             //for (i = 1; i < 6; i++)
+               //fprintf(stderr,"%d ", alloc[i]);
              for (i = 1; i < 6; i++)
                AvailableVector[i] = ResourceVector[i] - alloc[i];
  
-              fprintf(stderr,"%s","\nAvailable resources: ");
-             for (i = 1; i < 6; i++)
-              fprintf(stderr,"%d ", AvailableVector[i]);
-              printf("\n");
+             // fprintf(stderr,"%s","\nAvailable resources: ");
+            // for (i = 1; i < 6; i++)
+              //fprintf(stderr,"%d ", AvailableVector[i]);
+              //printf("\n");
              while (count != 0) {
                safe = false;
                for (i = 0; i < active; i++) {
@@ -312,7 +312,7 @@ void  ALARMhandler(int sig)
                  if (running[i]) { 
                    
                   exec = 1;
-                for (j = 1; j < 6; j++) { fprintf(stderr, "max claim - allocated is %d\n", newMax[i][j] - newAlloc[i][j]);
+                for (j = 1; j < 6; j++) { //fprintf(stderr, "max claim - allocated is %d\n", newMax[i][j] - newAlloc[i][j]);
                        printf("\n"); fprintf(stderr, "available is %d\n", AvailableVector[j]);
                    if (newMax[i][j] - newAlloc[i][j] > AvailableVector[j]) {
                         exec = 0;//fprintf(stderr, "max claim is %d and alloc is %c\n", newMax[i][j], newAlloc[i][j]);
@@ -361,7 +361,7 @@ void  ALARMhandler(int sig)
                //do nothing
                
                }
-            else{//take away allocation
+            else{fprintf(stderr,"%s","hello");
                for(i = 0; i <30; i++){
                  if(shmPTR->RequestID == AllocMatrix[i][0]){
                     for(j = 1; j<=5; j++){
