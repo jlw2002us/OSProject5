@@ -32,7 +32,7 @@ int main() {
    long int getrand = getpid();
    int boundmil = 0;
    int milliseconds = 0;
-   int i, j;
+   
    int ShmID;
           sem_t *sem;
    //          long long int x = 0;
@@ -62,7 +62,7 @@ int main() {
      if((shmPTR->Release == -2)&&(milliseconds >= boundmil)) {
                 sem = sem_open("sem1113", 0); sem_wait(sem);
                 srand(getrand++); value = 1 + (rand()%100);   //fprintf(stderr, "Value is %d\n",value);
-                if(value >= 40)
+                if(value >= 50)
                  shmPTR->Release = 0; //request a resource
                 else
                  shmPTR->Release = 1; //release a resource
