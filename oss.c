@@ -19,7 +19,7 @@
 struct Memory {
      int MaxClaims;
      int  seconds;
-     //int ClaimsMatrix[30][22];
+     int Release;
      long long int  nanoseconds;
      int TerminatedProc[2];
      int processID;
@@ -128,10 +128,10 @@ void  ALARMhandler(int sig)
     if (shmPTR == NULL) {
       printf("*** shmat error (server) ***\n");
       exit(1);
-    } shmPTR->Requests[0] = -2;
+    } shmPTR->Release = -2;
     shmPTR->seconds = 1;
     for(i=0; i<30; i++) {
-             for(j=0;j<20;j++) {
+             for(j=0;j<21;j++) {
                        ClaimsMatrix[i][j] = 0;
                              }
                     }
@@ -143,7 +143,7 @@ void  ALARMhandler(int sig)
       sem_close(sem);
        for(x = 1; x <= 20; x++){
             srand(getrand++); 
-             value = (rand() % (7 - 5)) + 5;
+             value = (rand() % (8 - 5)) + 5;
 
              ResourceVector[x] = value;
              //AvailableVector[x] = value;
@@ -152,7 +152,7 @@ void  ALARMhandler(int sig)
         
       while(1){if(signal_interrupt == true) break;
           //int milliseconds = (1000*shmPTR->seconds) + (int)(shmPTR->nanoseconds/1000000);
-          if(noProcesses > 18) break;
+          //if(noProcesses > 18) break;
           if((milliseconds >= boundmill)&&(childCount < 18)){
             childCount++;  noProcesses++; srand(getrand++);
             value = 1 + (rand()%5); shmPTR->MaxClaims = value; 
@@ -180,39 +180,38 @@ void  ALARMhandler(int sig)
                   if (shmPTR->TerminatedProc[y] == AllocMatrix[i][0]){
                      AllocMatrix[i][0] = -2; ClaimsMatrix[i][0] = -2;
                      
-                }}fprintf(stderr, "Process %d is exiting\n", shmPTR->TerminatedProc[y]);shmPTR->TerminatedProc[y] = -2;
+                }}fprintf(stderr, "Process %d is exiting\n", shmPTR->TerminatedProc[y]);shmPTR->Release = -2; shmPTR->TerminatedProc[y] = -2;
                shmPTR->termNum = 0;sem_post(sem); sem_close(sem); childCount--;}
 
 
-          if(shmPTR->Requests[0] != -2){
+          if(shmPTR->Release != -2){
                sem = sem_open("sem1113", 0); sem_wait(sem);
-               fprintf(stderr,"Process %d requests %d of resource %d \n", shmPTR->RequestID,shmPTR->Requests[1], shmPTR->Requests[2]);
+               if(shmPTR->Release == 0){
+                 fprintf(stderr,"Process %d requests %d of resource %d \n", shmPTR->RequestID,shmPTR->Requests[1], shmPTR->Requests[2]);
              //enter into claims matrix if not already there
                 
-             for(i=0; i<30; i++) { if(ClaimsMatrix[i][0] == shmPTR->RequestID) break;
+                 for(i=0; i<30; i++) { if(ClaimsMatrix[i][0] == shmPTR->RequestID) break;
                      if(ClaimsMatrix[i][0] == 0){
                           ClaimsMatrix[i][0] = shmPTR->RequestID;
                           for(j= 1;j< 21;j++) {
                               ClaimsMatrix[i][j] =   shmPTR->MaxClaims;
                                                                                                              //fprintf(stderr,"%d", ClaimsMatrix[i][j]);
-              }                                                                                                                                                                       break;
-                                                                                                                                                                                                                                                                                                                                          }
-                                                                                                  
-                                                                                                                                                                                                                                                                                                                                          }
-                                                                                                             //
-            
-            
+              }                     break;
+                                                                                                                                                                                                                    }
+                                                                                                                                                                                                                    }
+             
+             
 
              //add process to allocation matrix if not already there
-             for (i = 0; i < 30; i++)
-            { //fprintf(stderr, "alloc matrix is %d\n", AllocMatrix[i][0]);
-               if(shmPTR->RequestID == AllocMatrix[i][0]){ break;}
-               else if(AllocMatrix[i][0] == 0){
-                   AllocMatrix[i][0] = shmPTR->RequestID; break;}
-            }
+                for (i = 0; i < 30; i++)
+                { //fprintf(stderr, "alloc matrix is %d\n", AllocMatrix[i][0]);
+                   if(shmPTR->RequestID == AllocMatrix[i][0]){ break;}
+                   else if(AllocMatrix[i][0] == 0){
+                     AllocMatrix[i][0] = shmPTR->RequestID; break;}
+                }
  
-           for (i = 0; i < 30; i++){
-                if(shmPTR->RequestID == AllocMatrix[i][0]){
+               for (i = 0; i < 30; i++){
+                 if(shmPTR->RequestID == AllocMatrix[i][0]){
                   for(j = 1; j <= 20; j++){
                     if(j == shmPTR->Requests[2])
                        AllocMatrix[i][j] = AllocMatrix[i][j]  + shmPTR->Requests[1]; //add request to alloc matrix
@@ -227,8 +226,8 @@ void  ALARMhandler(int sig)
  
 
             //see if process has exceeded its max claim           
-             for (i=0; i < 30; i++){
-               if(shmPTR->RequestID == AllocMatrix[i][0]){
+              for (i=0; i < 30; i++){
+                if(shmPTR->RequestID == AllocMatrix[i][0]){
                   for( j = 1; j <=20; j++){
 
                      if(shmPTR->Requests[2] == j){
@@ -239,13 +238,13 @@ void  ALARMhandler(int sig)
                      }
                   }}
                   if( bankers == 0) break;
-             }
+              }
             //run banker's algorithm
-            if(bankers == 1){
+              if(bankers == 1){
                 
                   count = 0; int active = 0;
                
-               for(int i = 0; i < 30; i++){
+                for(int i = 0; i < 30; i++){
                    if((AllocMatrix[i][0] == -2) || (ClaimsMatrix[i][0] == 0)){
                          continue;}
                    else{ 
@@ -253,13 +252,13 @@ void  ALARMhandler(int sig)
                       for(int j = 1; j<=20; j++){ 
                         newAlloc[count][j] = AllocMatrix[i][j];
                         newMax[count][j] = ClaimsMatrix[i][j];}count++;active++;}
-               }
+                 } 
                
     
-               for (i = 0; i < count; i++) {
-                 running[i] = 1;
+                 for (i = 0; i < count; i++) {
+                   running[i] = 1;
                //  count++;
-               }   
+                 }   
  
     
  
@@ -267,79 +266,79 @@ void  ALARMhandler(int sig)
                //for (i = 1; i < 6; i++)
                //fprintf(stderr,"%d ", ResourceVector[i]);
  
-             //  fprintf(stderr,"%s","\nThe Allocated Resource Table:\n");
-              // for (i = 0; i < count; i++) {
-               // for (j = 1; j < 21; j++)
-                //   fprintf(stderr,"\t%d", newAlloc[i][j]);
-               // printf("\n");
-              // }
+              fprintf(stderr,"%s","\nThe Allocated Resource Table:\n");
+               for (i = 0; i < count; i++) {
+                for (j = 1; j < 21; j++)
+                   fprintf(stderr,"\t%d", newAlloc[i][j]);
+                printf("\n");
+               }
  
-             // fprintf(stderr,"%s","\nThe Maximum Claim Table:\n");
-             // for (i = 0; i < count; i++) {
-              //  for (j = 1; j < 21; j++)
-                //  fprintf(stderr,"\t%d", newMax[i][j]);
-               // printf("\n");
-             //  }
-             for (i = 0; i < count; i++){
-               for (j = 1; j < 21; j++)
-                alloc[j] = 0;}
+              fprintf(stderr,"%s","\nThe Maximum Claim Table:\n");
+                for (i = 0; i < count; i++) {
+                for (j = 1; j < 21; j++)
+                  fprintf(stderr,"\t%d", newMax[i][j]);
+                printf("\n");
+               }
+               for (i = 0; i < count; i++){
+                 for (j = 1; j < 21; j++)
+                   alloc[j] = 0;}
              
 
-            for (i = 0; i < count; i++){
-               for (j = 1; j < 21; j++)
-                alloc[j] += newAlloc[i][j];}
+               for (i = 0; i < count; i++){
+                 for (j = 1; j < 21; j++)
+                  alloc[j] += newAlloc[i][j];}
  
              //fprintf(stderr,"%s","\nAllocated resources: ");
              //for (i = 1; i < 6; i++)
                //fprintf(stderr,"%d ", alloc[i]);
-             for (i = 1; i < 21; i++)
-               AvailableVector[i] = ResourceVector[i] - alloc[i];
+               for (i = 1; i < 21; i++)
+                 AvailableVector[i] = ResourceVector[i] - alloc[i];
  
              // fprintf(stderr,"%s","\nAvailable resources: ");
             // for (i = 1; i < 6; i++)
               //fprintf(stderr,"%d ", AvailableVector[i]);
               //printf("\n");
-             while (count != 0) {
-               safe = false;
-               for (i = 0; i < active; i++) {
+               while (count != 0) {
+                 safe = false;
+                 for (i = 0; i < active; i++) {
                  
-                 if (running[i]) { 
+                   if (running[i]) { 
                    
-                  exec = 1;
-                for (j = 1; j < 21; j++) { //fprintf(stderr, "max claim - allocated is %d\n", newMax[i][j] - newAlloc[i][j]);
+                    exec = 1;
+                    for (j = 1; j < 21; j++) { //fprintf(stderr, "max claim - allocated is %d\n", newMax[i][j] - newAlloc[i][j]);
                        //printf("\n"); //fprintf(stderr, "available is %d\n", AvailableVector[j]);
-                   if (newMax[i][j] - newAlloc[i][j] > AvailableVector[j]) {
+                    if (newMax[i][j] - newAlloc[i][j] > AvailableVector[j]) {
                         exec = 0;//fprintf(stderr, "max claim is %d and alloc is %c\n", newMax[i][j], newAlloc[i][j]);
                         break;
                     }
-                }
+                    } 
  
-                if (exec) {
-                    fprintf(stderr,"\nProcess%d is executing.\n", i + 1);
-                    running[i] = 0;
-                    count--;
-                    safe = true; bankers = 1;
-                    for (j = 1; j < 21; j++)
+                   if (exec) {
+                      fprintf(stderr,"\nProcess%d is executing.\n", i + 1);
+                      running[i] = 0;
+                      count--;
+                      safe = true; bankers = 1;
+                      for (j = 1; j < 21; j++)
                         AvailableVector[j] += newAlloc[i][j];
-                    break;
+                      break;
+                   }  
+                  }
                 }
-            }
-        }
  
-        if (!safe) {
-            bankers = 0;
-            fprintf(stderr,"%s","\nThe processes are in unsafe state.");
-            break;
-        }
+                if (!safe) {
+                  
+                  fprintf(stderr,"%s","\nThe processes are in unsafe state.");
+                  break;
+                } 
  
-        if (safe){ 
-            bankers = 1;
-            fprintf(stderr,"%s","\nThe process is in safe state.\n");}
+                if (safe){ 
+                   
+                  fprintf(stderr,"%s","\nThe process is in safe state.\n");}
  
-        fprintf(stderr,"%s","\nAvailable vector: ");
-        for (i = 1; i < 21; i++)
-            fprintf(stderr,"%d ", AvailableVector[i]);
-    }
+                fprintf(stderr,"%s","\nAvailable vector: ");
+                for (i = 1; i < 21; i++)
+                 fprintf(stderr,"%d ", AvailableVector[i]);
+              }  
  
  
 
@@ -355,7 +354,7 @@ void  ALARMhandler(int sig)
                //do nothing
                
                }
-            else{fprintf(stderr,"%s","hello");
+            else{
                for(i = 0; i <30; i++){
                  if(shmPTR->RequestID == AllocMatrix[i][0]){
                     for(j = 1; j<=20; j++){
@@ -366,8 +365,16 @@ void  ALARMhandler(int sig)
 
             bankers = 1; safe = false;
             
-
-            shmPTR->Requests[0] = -2;  sem_post(sem); sem_close(sem);}
+            }
+            else{
+                for(i = 0; i < 30; i++){
+                  if(shmPTR->RequestID == AllocMatrix[i][0]){
+                     for(j = 1; j <= 21; j++){
+                       if (j == shmPTR->Requests[2]){
+                          if((AllocMatrix[i][j] - shmPTR->Requests[1]) >= 0){
+                            fprintf(stderr,"Process %d is releasing %d of resource %d\n", shmPTR->RequestID, shmPTR->Requests[1] ,shmPTR->Requests[2]);
+                            AllocMatrix[i][j] = AllocMatrix[i][j] - shmPTR->Requests[1];}}}}}}
+            shmPTR->Release = -2;  sem_post(sem); sem_close(sem);}
                        
             long long int nanoseconds = 0;
             while(nanoseconds < 2000000){
