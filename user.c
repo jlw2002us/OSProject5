@@ -77,7 +77,7 @@ int main() {
                shmPTR->RequestID = processID; sem_post(sem); sem_close(sem);
        srand(getrand++);
                value = 1 + (rand()%100);
-       if(value <= 10){ shmPTR->Requests[0] = -2; break;}
+       if(value <= 7){ shmPTR->Requests[0] = -2; break;} //if it's rolled the chance to terminate
          }
      }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
       sem = sem_open("sem1113", 0); sem_wait(sem);

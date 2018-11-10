@@ -1,4 +1,10 @@
- #include <semaphore.h>
+ //Jenifer Wasson
+ //Operating Systems
+ //Project 5
+ 
+ //Sources used:  rosettacode.org-banker's algorithm: modified for use in my program
+ 
+#include <semaphore.h>
   #include <string.h>
   #include <ctype.h>
   #include  <sys/shm.h>
@@ -39,37 +45,7 @@ struct Memory {
 struct Memory  *shmPTR;
 bool signal_interrupt = false;
 
-void helpoptions()
-{
-  printf("options for running Project 5:  \n");
-  printf("type ./parent -h for help options\n");
-  printf("type ./parent -n -s with values for n and s.\n");
 
-}
-bool bankersAlgorithm(){
-    
-    int x = 0;
-   //fprintf(stderr,"Request ID is %d\n", shmPTR->RequestID);
-   //make initial check
-   for( x= 1; x <= 3; x++)
-   {
-     if(shmPTR->Requests[2] == x) //check for resource number
-       {
-         if(shmPTR->Requests[1] > AvailableVector[x])
-           return false;
-       }
-   }
-   //decrease available vector and run algorithm
-   for(x=1; x <= 3; x++){
-      if(shmPTR->Requests[2] == 2)
-      { 
-          AvailableVector[x] = AvailableVector[x] - shmPTR->Requests[1];
-      }
-    }
-   
-
-    return true;
-}
 void  ALARMhandler(int sig)
 { if(signal_interrupt == false)
   write (STDOUT_FILENO,"Alarm went off\n",16);
@@ -82,14 +58,14 @@ void  ALARMhandler(int sig)
  int main(int argc, char* argv[])
   {
 
-      int alloc[40];
-       int newAlloc[30][22]; int newMax[30][22];
+     int alloc[40];
+     int newAlloc[30][22]; int newMax[30][22];
 
-      int running[40];
-
-      int exec = 0;
-      bool safe = false;
-      int printCount = 0;
+     int running[40];
+     FILE *fp;
+     int exec = 0;
+     bool safe = false;
+     int printCount = 0;
      sem_t *sem;
      int milliseconds = 0;
      int childCount = 0;
@@ -105,6 +81,7 @@ void  ALARMhandler(int sig)
      int boundmill = 0;
      int i,j;
      int y;
+
     //initialize arrays
     for(i = 0; i < 20; i++){
         AvailableVector[i] = 0;
@@ -143,12 +120,17 @@ void  ALARMhandler(int sig)
       sem_close(sem);
        for(x = 1; x <= 20; x++){
             srand(getrand++); 
-             value = (rand() % (8 - 5)) + 5;
-
+             value = (rand() % (8 - 5)) + 5; //set system resources to 5 to 7 randomly
+             //fprintf(stderr,"value is %d \n",value);
              ResourceVector[x] = value;
             
              }
-             
+       fp= fopen("logfile.txt", "a");
+       if (fp == NULL) {
+        fprintf(stderr, "Can't open output file %s!\n",
+          "logfile.txt");
+        exit(1);
+       }               
         
       while(1){if(signal_interrupt == true) break;
           
@@ -180,14 +162,15 @@ void  ALARMhandler(int sig)
                   if (shmPTR->TerminatedProc[y] == AllocMatrix[i][0]){
                      AllocMatrix[i][0] = -2; ClaimsMatrix[i][0] = -2;
                      
-                }}fprintf(stderr, "Process %d is exiting\n", shmPTR->TerminatedProc[y]);shmPTR->Release = -2; shmPTR->TerminatedProc[y] = -2;
+                }}fprintf(fp, "Process %d is exiting at time %d"":""%lld\n", shmPTR->TerminatedProc[y],shmPTR->seconds, shmPTR->nanoseconds);
+               shmPTR->Release = -2; shmPTR->TerminatedProc[y] = -2;
                shmPTR->termNum = 0;sem_post(sem); sem_close(sem); childCount--;}
 
 
           if(shmPTR->Release != -2){  //if a child is in the critical region
                sem = sem_open("sem1113", 0); sem_wait(sem); printCount++;
                if(shmPTR->Release == 0){
-                 fprintf(stderr,"Process %d requests %d of resource %d at time %d"":""%lld \n", shmPTR->RequestID,shmPTR->Requests[1], shmPTR->Requests[2],shmPTR->seconds,shmPTR->nanoseconds);
+                 fprintf(fp,"Process %d requests %d of resource %d at time %d"":""%lld \n", shmPTR->RequestID,shmPTR->Requests[1], shmPTR->Requests[2],shmPTR->seconds,shmPTR->nanoseconds);
              //enter into claims matrix if not already there
                 
                  for(i=0; i<30; i++) { if(ClaimsMatrix[i][0] == shmPTR->RequestID) break;
@@ -298,7 +281,7 @@ void  ALARMhandler(int sig)
  
                 if (!safe) {
                   
-                  fprintf(stderr,"%s","\nThe processes are in unsafe state.");
+                  //fprintf(stderr,"%s","\nThe processes are in unsafe state.");
                   break;
                 } 
  
@@ -318,13 +301,13 @@ void  ALARMhandler(int sig)
             
            
             if(safe == true){
-              fprintf(stderr,"Process %d is allocated %d of Resource %d\n",shmPTR->RequestID, shmPTR->Requests[1], shmPTR->Requests[2]);
+              fprintf(fp,"Process %d is allocated %d of Resource %d\n",shmPTR->RequestID, shmPTR->Requests[1], shmPTR->Requests[2]);
                
                }
 
                
                
-            else{fprintf(stderr, "Process %d is blocked from Resource %d\n", shmPTR->RequestID, shmPTR->Requests[2]);
+            else{fprintf(fp, "Process %d is blocked from Resource %d\n", shmPTR->RequestID, shmPTR->Requests[2]);
                for(i = 0; i <30; i++){
                  if(shmPTR->RequestID == AllocMatrix[i][0]){
                     for(j = 1; j<=20; j++){
@@ -339,20 +322,20 @@ void  ALARMhandler(int sig)
                      for(j = 1; j <= 21; j++){
                        if (j == shmPTR->Requests[2]){
                           if((AllocMatrix[i][j] - shmPTR->Requests[1]) >= 0){
-                            fprintf(stderr,"Process %d is releasing %d of resource %d at time %d"":""%lld \n", shmPTR->RequestID, shmPTR->Requests[1] ,shmPTR->Requests[2],shmPTR->seconds,shmPTR->nanoseconds);
+                            fprintf(fp,"Process %d is releasing %d of resource %d at time %d"":""%lld \n", shmPTR->RequestID, shmPTR->Requests[1] ,shmPTR->Requests[2],shmPTR->seconds,shmPTR->nanoseconds);
                             AllocMatrix[i][j] = AllocMatrix[i][j] - shmPTR->Requests[1];}}}}}}
            
                if(printCount%20 == 0){
-               fprintf(stderr,"%s","\nThe Allocated Resource Table:\n");
+               fprintf(fp,"%s","\nThe Allocated Resource Table:\n");
                for (i = 0; i < 30; i++) {
                 if((AllocMatrix[i][0] == -2) || (AllocMatrix[i][0] == 0))
                   continue;
-                else fprintf(stderr, "Process %d    ", AllocMatrix[i][0]);
+                else fprintf(fp, "Process %d    ", AllocMatrix[i][0]);
                 for (j = 1; j < 21; j++)
-                   fprintf(stderr,"\t%d", AllocMatrix[i][j]);
-                printf("\n");
+                   fprintf(fp,"\t%d", AllocMatrix[i][j]);
+                fprintf(fp,"%s","\n");
                }
-            fprintf(stderr,"%s","\n");}
+            fprintf(fp,"%s","\n");}
 
             bankers = 1; safe = false;
 
@@ -375,12 +358,12 @@ void  ALARMhandler(int sig)
      
    
       shmdt((void *) shmPTR);
-               sem_close(sem);
+       sem_close(sem);
       
-             sem_unlink("sem1113");
+       sem_unlink("sem1113");
          
-    
-                                           shmctl(ShmID, IPC_RMID, NULL);
+       fclose(fp);
+       shmctl(ShmID, IPC_RMID, NULL);
        killpg(getpgid(getpid()), SIGTERM);                //                         printf("Server has removed its shared memory...\n");
       //                                               printf("Server exits...\n");
       //                                                    
