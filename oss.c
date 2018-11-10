@@ -342,8 +342,8 @@ void  ALARMhandler(int sig)
             shmPTR->Release = -2;  sem_post(sem); sem_close(sem);}
                        
             long long int nanoseconds = 0;
-            while(nanoseconds < 20000000){
-             nanoseconds = nanoseconds + 100;
+            while(nanoseconds < 2000000){
+             nanoseconds = nanoseconds + 250;
 
             }
             shmPTR->nanoseconds = shmPTR->nanoseconds + nanoseconds;

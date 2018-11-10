@@ -73,7 +73,7 @@ int main() {
                shmPTR->Requests[2] = value; 
                                                                                                                                                                                //}
                shmPTR->MaxClaims = MaxClaims;                                                                                                                                                             
-               boundmil =  1000*shmPTR->seconds + (int)(shmPTR->nanoseconds/1000000) + value;
+               boundmil =  1070*shmPTR->seconds + (int)(shmPTR->nanoseconds/1000000) + value;
                shmPTR->RequestID = processID; sem_post(sem); sem_close(sem);
        srand(getrand++);
                value = 1 + (rand()%100);
