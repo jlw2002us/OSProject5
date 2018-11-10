@@ -342,14 +342,14 @@ void  ALARMhandler(int sig)
             shmPTR->Release = -2;  sem_post(sem); sem_close(sem);}
                        
             long long int nanoseconds = 0;
-            while(nanoseconds < 2000000){
-             nanoseconds = nanoseconds + 30;
+            while(nanoseconds < 20000000){
+             nanoseconds = nanoseconds + 100;
 
             }
             shmPTR->nanoseconds = shmPTR->nanoseconds + nanoseconds;
             while(shmPTR->nanoseconds >= 1000000000){
               shmPTR->seconds++;
-              shmPTR->nanoseconds = shmPTR->nanoseconds - nanoseconds;}}
+              shmPTR->nanoseconds = shmPTR->nanoseconds - 1000000000;}}
        }
              do{ if(signal_interrupt == true) break;
        printf("Clock ticking..\n");
