@@ -72,7 +72,9 @@ void  ALARMhandler(int sig)
      int value = 0;
      pid_t childID;
      int bankers = 1;
+     float noTimesRun = 0;
      
+     float RequestsGranted = 0;
      long int getrand = getpid();
      signal(SIGALRM, ALARMhandler);
      int x;
@@ -218,7 +220,7 @@ void  ALARMhandler(int sig)
               }
             //run banker's algorithm
               if(bankers == 1){
-                
+                noTimesRun++;
                   count = 0; int active = 0;
                
                 for(int i = 0; i < 30; i++){
@@ -302,7 +304,7 @@ void  ALARMhandler(int sig)
            
             if(safe == true){
               fprintf(fp,"Process %d is allocated %d of Resource %d\n",shmPTR->RequestID, shmPTR->Requests[1], shmPTR->Requests[2]);
-               
+               RequestsGranted++;
                }
 
                
@@ -355,8 +357,10 @@ void  ALARMhandler(int sig)
        printf("Clock ticking..\n");
        sleep(1);
       }while (true);
-     
-   
+       
+       fprintf(fp,"\n\nNumber of requests granted is: %f\n", RequestsGranted);
+       fprintf(fp, "Number of times banker's algorithm was run: %f\n", noTimesRun);
+       fprintf(fp, "Percentage granted was: %f\n", 100*(RequestsGranted/noTimesRun));  
       shmdt((void *) shmPTR);
        sem_close(sem);
       
